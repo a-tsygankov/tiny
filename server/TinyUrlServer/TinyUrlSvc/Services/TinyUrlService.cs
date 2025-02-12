@@ -134,10 +134,9 @@ namespace TinyUrlSvc.Services
         /// <summary>
         /// Lists all stored short URLs.
         /// </summary>
-        public async Task<IEnumerable<string>> GetAllShortenUrlsAsync()
+        public async Task<IEnumerable<UrlStatistics>> GetAllShortenUrlsAsync()
         {
-            var allTinyUrls = await _tinyUrlRepository.GetAllAsync();
-            return allTinyUrls.Select(t => t.ShortUrl);
+            return await _urlStatsRepository.GetAllAsync();
         }
 
         // -----------------------------------------------------------

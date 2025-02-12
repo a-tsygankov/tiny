@@ -19,7 +19,7 @@ namespace TinyUrlSvc.Services
 
         Task<UrlStatistics?> GetStatisticsAsync(string shortUrl);
 
-        Task<IEnumerable<string>> GetAllShortenUrlsAsync();
+        Task<IEnumerable<UrlStatistics>> GetAllShortenUrlsAsync();
     }
 }
 

@@ -85,8 +85,8 @@ app.MapGet("/tinyurls/stats", async (string shortUrl, ITinyUrlService service) =
 
 app.MapGet("/tinyurls/all", async (ITinyUrlService service) =>
 {
-    var all = await service.GetAllShortenUrlsAsync();
-    return Results.Ok(new AllShortUrlsResponse(all));
+    var allStats = await service.GetAllShortenUrlsAsync();
+    return Results.Ok(allStats);
 });
 
 app.Run();

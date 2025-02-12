@@ -1,92 +1,55 @@
 // src/App.tsx
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import type { RootState, AppDispatch } from './store';
-import {
-  fetchAllShortUrls,
-  createShortUrl,
-  deleteShortUrl
-} from './urlSlice.ts';
+import { fetchAllShortUrls } from './urlSlice';
+import { UrlStatistics } from './urlSlice';
 
 function App() {
   const dispatch = useDispatch<AppDispatch>();
-  const { allShortUrls, loading, error } = useSelector((state: RootState) => state.url);
-
-  const [longUrl, setLongUrl] = useState('');
-  const [createdBy, setCreatedBy] = useState('');
-  const [customAlias, setCustomAlias] = useState('');
+  const { allStats, loading, error } = useSelector((state: RootState) => state.url);
 
   useEffect(() => {
     dispatch(fetchAllShortUrls());
   }, [dispatch]);
 
-  const handleCreate = (e: React.FormEvent) => {
-    e.preventDefault();
-    dispatch(createShortUrl({ longUrl, createdBy, customAlias }));
-    setLongUrl('');
-    setCreatedBy('');
-    setCustomAlias('');
-  };
-
-  const handleDelete = (shortUrl: string) => {
-    dispatch(deleteShortUrl(shortUrl));
+  // Convert server date/time to local string:
+  const toLocal = (dateString: string | null | undefined) => {
+    if (!dateString) return '-';
+    // e.g. create a Date and format locally:
+    const d = new Date(dateString);
+    return d.toLocaleString();
   };
 
   return (
     <div style={{ maxWidth: 600, margin: 'auto' }}>
-      <h1>TinyUrl React App</h1>
+      <h1>TinyUrl Statistics</h1>
       {loading && <p>Loading...</p>}
       {error && <p style={{ color: 'red' }}>Error: {error}</p>}
 
-      <section>
-        <h2>All Short URLs</h2>
-        <ul>
-          {allShortUrls.map((url) => (
-            <li key={url}>
-              <span>{url}</span>
-              {'  '}
-              <button onClick={() => handleDelete(url)}>
-                Delete
-              </button>
-            </li>
-          ))}
-        </ul>
-      </section>
-
-      <section style={{ marginTop: '2rem' }}>
-        <h2>Create a New Short URL</h2>
-        <form onSubmit={handleCreate} style={{ display: 'flex', flexDirection: 'column', maxWidth: 300 }}>
-          <label>
-            Long URL:
-            <input
-              type="text"
-              value={longUrl}
-              onChange={(e) => setLongUrl(e.target.value)}
-              required
-            />
-          </label>
-          <label>
-            Created By:
-            <input
-              type="text"
-              value={createdBy}
-              onChange={(e) => setCreatedBy(e.target.value)}
-              required
-            />
-          </label>
-          <label>
-            Custom Alias (optional):
-            <input
-              type="text"
-              value={customAlias}
-              onChange={(e) => setCustomAlias(e.target.value)}
-            />
-          </label>
-          <button type="submit" style={{ marginTop: '1rem' }}>
-            Create
-          </button>
-        </form>
-      </section>
+      <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+        <thead>
+          <tr>
+            <th>Short URL (Id)</th>
+            <th>Click Count</th>
+            <th>Last Accessed</th>
+            <th>Created At</th>
+          </tr>
+        </thead>
+        <tbody>
+          {allStats.map((stats: UrlStatistics) => {
+            const shortUrl = stats.id.value; // e.g. "Abc123"
+            return (
+              <tr key={shortUrl}>
+                <td>{shortUrl}</td>
+                <td>{stats.clickCount}</td>
+                <td>{toLocal(stats.lastAccessed ?? '')}</td>
+                <td>{toLocal(stats.createdAt)}</td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
     </div>
   );
 }

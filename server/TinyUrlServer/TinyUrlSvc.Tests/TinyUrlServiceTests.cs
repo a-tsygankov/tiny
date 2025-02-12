@@ -9,6 +9,7 @@ namespace TinyUrlSvc.Tests
     public class TinyUrlServiceTests
     {
         private const string HOST_NAME = "https://short.ly";
+
         private readonly Mock<IRepository<TinyUrl>> _mockTinyUrlRepo;
         private readonly Mock<IRepository<UrlStatistics>> _mockStatsRepo;
         private readonly Mock<IUrlIdBuilder> _mockUrlIdBuilder;
@@ -53,20 +54,23 @@ namespace TinyUrlSvc.Tests
             var generatedId = new UrlId("Abc123");
             var longUrl = "https://example.com";
             var createdBy = "tester";
+
             _mockUrlIdBuilder
                 .Setup(b => b.GenerateUrlIdAsync(null))
                 .ReturnsAsync(generatedId);
+
             _mockStatsRepo
                 .Setup(r => r.GetAsync(generatedId))
                 .ReturnsAsync((UrlStatistics?)null);
+
             var shortUrl = await service.CreateShortUrlAsync(longUrl, createdBy);
+
             Assert.Equal($"{HOST_NAME}/Abc123", shortUrl);
+
             _mockTinyUrlRepo.Verify(r => r.CreateAsync(It.Is<TinyUrl>(t =>
-                t.Id == generatedId &&
-                t.LongUrl == longUrl &&
-                t.ShortUrl == shortUrl &&
-                t.CreatedBy == createdBy
+                t.LongUrl == longUrl && t.CreatedBy == createdBy && t.ShortUrl == shortUrl
             )), Times.Once);
+
             _mockStatsRepo.Verify(r => r.GetAsync(generatedId), Times.Once);
             _mockStatsRepo.Verify(r => r.CreateAsync(It.Is<UrlStatistics>(s =>
                 s.Id == generatedId && s.ClickCount == 0
@@ -79,13 +83,17 @@ namespace TinyUrlSvc.Tests
             var service = CreateService();
             var generatedId = new UrlId("Abc123");
             var existingStats = new UrlStatistics { Id = generatedId, ClickCount = 99 };
+
             _mockUrlIdBuilder
                 .Setup(b => b.GenerateUrlIdAsync(null))
                 .ReturnsAsync(generatedId);
+
             _mockStatsRepo
                 .Setup(r => r.GetAsync(generatedId))
                 .ReturnsAsync(existingStats);
-            await service.CreateShortUrlAsync("https://example.com", "tester");
+
+            await service.CreateShortUrlAsync("https://example.com", "testUser");
+
             _mockStatsRepo.Verify(r => r.CreateAsync(It.IsAny<UrlStatistics>()), Times.Never);
         }
 
@@ -95,7 +103,9 @@ namespace TinyUrlSvc.Tests
             var service = CreateService();
             var result = await service.DeleteShortUrlAsync("bad-format");
             Assert.False(result);
+
             _mockTinyUrlRepo.Verify(r => r.DeleteAsync(It.IsAny<UrlId>()), Times.Never);
+            _mockStatsRepo.Verify(r => r.DeleteAsync(It.IsAny<UrlId>()), Times.Never);
         }
 
         [Fact]
@@ -103,11 +113,14 @@ namespace TinyUrlSvc.Tests
         {
             var service = CreateService();
             var codeId = new UrlId("Abc123");
+
             _mockTinyUrlRepo
                 .Setup(r => r.DeleteAsync(codeId))
                 .ReturnsAsync(true);
+
             var result = await service.DeleteShortUrlAsync($"{HOST_NAME}/Abc123");
             Assert.True(result);
+
             _mockTinyUrlRepo.Verify(r => r.DeleteAsync(codeId), Times.Once);
             _mockStatsRepo.Verify(r => r.DeleteAsync(codeId), Times.Once);
         }
@@ -117,13 +130,16 @@ namespace TinyUrlSvc.Tests
         {
             var service = CreateService();
             var codeId = new UrlId("Abc123");
+
             _mockTinyUrlRepo
                 .Setup(r => r.DeleteAsync(codeId))
                 .ReturnsAsync(false);
+
             var result = await service.DeleteShortUrlAsync($"{HOST_NAME}/Abc123");
             Assert.False(result);
+
             _mockTinyUrlRepo.Verify(r => r.DeleteAsync(codeId), Times.Once);
-            _mockStatsRepo.Verify(r => r.DeleteAsync(codeId), Times.Never);
+            _mockStatsRepo.Verify(r => r.DeleteAsync(It.IsAny<UrlId>()), Times.Never);
         }
 
         [Fact]
@@ -132,6 +148,7 @@ namespace TinyUrlSvc.Tests
             var service = CreateService();
             var result = await service.GetLongUrlAsync("bad-format");
             Assert.Null(result);
+
             _mockTinyUrlRepo.Verify(r => r.GetAsync(It.IsAny<UrlId>()), Times.Never);
         }
 
@@ -140,9 +157,11 @@ namespace TinyUrlSvc.Tests
         {
             var service = CreateService();
             var codeId = new UrlId("Abc123");
+
             _mockTinyUrlRepo
                 .Setup(r => r.GetAsync(codeId))
                 .ReturnsAsync((TinyUrl?)null);
+
             var result = await service.GetLongUrlAsync($"{HOST_NAME}/Abc123");
             Assert.Null(result);
         }
@@ -152,31 +171,31 @@ namespace TinyUrlSvc.Tests
         {
             var service = CreateService();
             var codeId = new UrlId("Abc123");
+
             var tinyUrl = new TinyUrl
             {
-                Id = codeId,
                 LongUrl = "https://long.com/path",
-                ShortUrl = $"{HOST_NAME}/Abc123",
-                Created = DateTime.UtcNow,
-                CreatedBy = "me"
+                ShortUrl = $"{HOST_NAME}/Abc123"
             };
-            var existingStats = new UrlStatistics
+            var stats = new UrlStatistics
             {
                 Id = codeId,
                 ClickCount = 10
             };
+
             _mockTinyUrlRepo
                 .Setup(r => r.GetAsync(codeId))
                 .ReturnsAsync(tinyUrl);
+
             _mockStatsRepo
                 .Setup(r => r.GetAsync(codeId))
-                .ReturnsAsync(existingStats);
+                .ReturnsAsync(stats);
+
             var result = await service.GetLongUrlAsync($"{HOST_NAME}/Abc123");
+
             Assert.Equal("https://long.com/path", result);
             _mockStatsRepo.Verify(r => r.UpdateAsync(It.Is<UrlStatistics>(s =>
-                s.Id == codeId &&
-                s.ClickCount == 11 &&
-                s.LastAccessed.HasValue
+                s.Id == codeId && s.ClickCount == 11 && s.LastAccessed.HasValue
             )), Times.Once);
         }
 
@@ -186,6 +205,7 @@ namespace TinyUrlSvc.Tests
             var service = CreateService();
             var stats = await service.GetStatisticsAsync("invalid-url");
             Assert.Null(stats);
+
             _mockStatsRepo.Verify(r => r.GetAsync(It.IsAny<UrlId>()), Times.Never);
         }
 
@@ -199,41 +219,44 @@ namespace TinyUrlSvc.Tests
                 Id = codeId,
                 ClickCount = 5
             };
+
             _mockStatsRepo
                 .Setup(r => r.GetAsync(codeId))
                 .ReturnsAsync(existingStats);
+
             var result = await service.GetStatisticsAsync($"{HOST_NAME}/Abc123");
+
             Assert.NotNull(result);
-            Assert.Equal(codeId, result.Id);
+            Assert.Equal(codeId, result!.Id);
             Assert.Equal(5, result.ClickCount);
         }
 
+        // UPDATED TEST: Now returns IEnumerable<UrlStatistics>
         [Fact]
-        public async Task GetAllShortenUrlsAsync_ReturnsAllShortUrls()
+        public async Task GetAllShortenUrlsAsync_ReturnsAllUrlStats()
         {
             var service = CreateService();
-            var items = new List<TinyUrl>
+
+            var statsList = new List<UrlStatistics>
             {
-                new TinyUrl
-                {
-                    Id = new UrlId("A1"),
-                    ShortUrl = $"{HOST_NAME}/A1",
-                    LongUrl = "https://foo.com"
-                },
-                new TinyUrl
-                {
-                    Id = new UrlId("B2"),
-                    ShortUrl = $"{HOST_NAME}/B2",
-                    LongUrl = "https://bar.com"
-                }
+                new UrlStatistics { Id = new UrlId("A1"), ClickCount = 2, CreatedAt = DateTime.UtcNow.AddDays(-1) },
+                new UrlStatistics { Id = new UrlId("B2"), ClickCount = 5, CreatedAt = DateTime.UtcNow }
             };
-            _mockTinyUrlRepo
+
+            _mockStatsRepo
                 .Setup(r => r.GetAllAsync())
-                .ReturnsAsync(items);
+                .ReturnsAsync(statsList);
+
             var result = await service.GetAllShortenUrlsAsync();
             Assert.Equal(2, result.Count());
-            Assert.Contains($"{HOST_NAME}/A1", result);
-            Assert.Contains($"{HOST_NAME}/B2", result);
+
+            var first = result.First();
+            Assert.Equal("A1", first.Id.Value);
+            Assert.Equal(2, first.ClickCount);
+
+            var second = result.Last();
+            Assert.Equal("B2", second.Id.Value);
+            Assert.Equal(5, second.ClickCount);
         }
     }
 }
