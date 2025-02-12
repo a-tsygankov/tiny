@@ -1,4 +1,3 @@
-// src/App.tsx
 import React, { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import type { RootState, AppDispatch } from './store'
@@ -47,7 +46,7 @@ function App() {
         customAlias
       })
     )
-    // Clear fields
+
     setLongUrl('')
     setCreatedBy('')
     setCustomAlias('')
@@ -55,18 +54,14 @@ function App() {
 
   // Delete a row
   const handleDelete = (item: UrlStatistics) => {
-    // If your back-end expects the full short URL (e.g. "http://short.ly/alias"), adjust:
-    // dispatch(deleteShortUrl("http://short.ly/" + item.id.value))
     dispatch(deleteShortUrl(item.id.value))
   }
 
   // Resolve short URL to see the long URL
   const handleResolve = async (item: UrlStatistics) => {
-    // Same idea: pass just the ID or the full short URL, depending on your back end
     const shortUrlId = item.id.value
     const resultAction = await dispatch(resolveShortUrl(shortUrlId))
-    // If you store the resolved long URL in the slice, the table will re-render automatically.
-    // Or you can parse the result to show an alert or update local state:
+
     if (resolveShortUrl.fulfilled.match(resultAction)) {
       const longUrl = resultAction.payload as string
       alert(`Long URL for ${shortUrlId}:\n${longUrl}`)

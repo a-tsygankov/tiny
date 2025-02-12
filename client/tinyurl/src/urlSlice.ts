@@ -1,4 +1,3 @@
-// src/urlSlice.ts
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
 import axios from 'axios'
 
@@ -53,9 +52,7 @@ export const createShortUrl = createAsyncThunk(
         createdBy: payload.createdBy,
         customAlias: payload.customAlias
       })
-      // Some APIs return { shortUrl: "http://short.ly/alias" }
-      // If your API doesn't update the stats right away, you may need to refetch
-      // the entire list. We'll do that in the extraReducers below.
+
       return await axios.get(`${API_BASE}/tinyurls/all`).then(r => r.data as UrlStatistics[])
     } catch (err: any) {
       return rejectWithValue(err.message)
@@ -67,10 +64,9 @@ export const deleteShortUrl = createAsyncThunk(
   'url/delete',
   async (shortUrlId: string, { rejectWithValue }) => {
     try {
-      // Some APIs require the full short URL as a param: '?shortUrl=http://short.ly/xxx'
-      // Or just the ID if the service logic supports it. Adjust as needed:
+
       await axios.delete(`${API_BASE}/tinyurls`, { params: { shortUrl: `http://short.ly/${shortUrlId}` } })
-      // After deleting, fetch the updated list
+
       const res = await axios.get(`${API_BASE}/tinyurls/all`)
       return res.data as UrlStatistics[]
     } catch (err: any) {
@@ -83,12 +79,11 @@ export const resolveShortUrl = createAsyncThunk(
   'url/resolve',
   async (shortUrlId: string, { rejectWithValue }) => {
     try {
-      // If your API expects: GET /tinyurls/resolve?shortUrl=http://short.ly/{id}
       const fullShortUrl = `http://short.ly/${shortUrlId}`
       const response = await axios.get(`${API_BASE}/tinyurls/resolve`, {
         params: { shortUrl: fullShortUrl }
       })
-      // response.data might be { longUrl: "https://example.com/xxx" }
+
       return response.data.longUrl as string
     } catch (err: any) {
       return rejectWithValue(err.message)
