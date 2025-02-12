@@ -29,7 +29,22 @@ builder.Services.AddSingleton<ITinyUrlService, TinyUrlService>(
     }
 );
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy(name: "AllowAll",
+        policy =>
+        {
+            policy.WithOrigins("*") // or "*"
+                  .AllowAnyHeader()
+                  .AllowAnyMethod();
+        });
+});
+
+
 var app = builder.Build();
+
+app.UseCors("AllowAll");
+
 
 var service = app.Services.GetRequiredService<ITinyUrlService>();
 await MockData.LoadMockDataAsync(service);
