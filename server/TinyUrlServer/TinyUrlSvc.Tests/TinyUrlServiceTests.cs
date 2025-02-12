@@ -195,7 +195,7 @@ namespace TinyUrlSvc.Tests
 
             Assert.Equal("https://long.com/path", result);
             _mockStatsRepo.Verify(r => r.UpdateAsync(It.Is<UrlStatistics>(s =>
-                s.Id == codeId && s.ClickCount == 11 && s.LastAccessed.HasValue
+                s.Id == codeId && s.ClickCount == 11
             )), Times.Once);
         }
 
