@@ -1,6 +1,6 @@
 // src/store.ts
 import { configureStore } from '@reduxjs/toolkit';
-import urlSlice from './urlSlice';
+import urlSlice from './urlSlice.ts';
 
 const store = configureStore({
   reducer: {

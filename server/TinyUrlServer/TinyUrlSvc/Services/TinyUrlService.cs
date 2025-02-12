@@ -149,8 +149,6 @@ namespace TinyUrlSvc.Services
             if (string.IsNullOrWhiteSpace(shortUrl))
                 return null;
 
-            // Require at least 2 segments, e.g. "https://short.ly/Abc123" => ["https:", "", "short.ly", "Abc123"]
-            // If the user passes something like "bad-format" => parts.Length == 1 => invalid
             var parts = shortUrl.Split('/');
             if (parts.Length < 2)
                 return null;

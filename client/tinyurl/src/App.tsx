@@ -6,7 +6,7 @@ import {
   fetchAllShortUrls,
   createShortUrl,
   deleteShortUrl
-} from './urlSlice';
+} from './urlSlice.ts';
 
 function App() {
   const dispatch = useDispatch<AppDispatch>();
