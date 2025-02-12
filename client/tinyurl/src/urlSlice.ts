@@ -34,7 +34,7 @@ export const fetchAllShortUrls = createAsyncThunk(
   }
 );
 
-// 2) Thunk to create a short URL
+
 export const createShortUrl = createAsyncThunk(
   'url/create',
   async (

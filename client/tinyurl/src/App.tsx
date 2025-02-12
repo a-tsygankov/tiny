@@ -2,8 +2,7 @@
 import React, { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import type { RootState, AppDispatch } from './store';
-import { fetchAllShortUrls } from './urlSlice';
-import { UrlStatistics } from './urlSlice';
+import { fetchAllShortUrls, UrlStatistics } from './urlSlice.ts';
 
 function App() {
   const dispatch = useDispatch<AppDispatch>();
