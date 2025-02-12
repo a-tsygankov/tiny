@@ -1,12 +1,13 @@
-﻿using TinyUrlSvc.Persistence;
+﻿using TinyUrlSvc.Entity;
+using TinyUrlSvc.Persistence;
 
-namespace TinyUrlSvc.Entity
+namespace TinyUrlSvc.Builders
 {
     /// <summary>
     /// Responsible for generating a unique UrlId for TinyUrl entities
     /// either from a custom alias or by random generation.
     /// </summary>
-    public class UrlIdBuilder
+    public class UrlIdBuilder : IUrlIdBuilder
     {
         private readonly IRepository<TinyUrl> _tinyUrlRepository;
 
@@ -59,7 +60,7 @@ namespace TinyUrlSvc.Entity
         public async Task<bool> IsUniqueAsync(UrlId candidate)
         {
             var existing = await _tinyUrlRepository.GetAsync(candidate);
-            return (existing == null);
+            return existing == null;
         }
 
         private UrlId GenerateRandomUrlId()

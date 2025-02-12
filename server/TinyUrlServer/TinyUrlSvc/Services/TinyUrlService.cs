@@ -1,4 +1,5 @@
-﻿using TinyUrlSvc.Entity;
+﻿using TinyUrlSvc.Builders;
+using TinyUrlSvc.Entity;
 using TinyUrlSvc.Persistence;
 
 namespace TinyUrlSvc.Services
@@ -7,14 +8,14 @@ namespace TinyUrlSvc.Services
     {
         private readonly IRepository<TinyUrl> _tinyUrlRepository;
         private readonly IRepository<UrlStatistics> _urlStatsRepository;
-        private readonly UrlIdBuilder _urlIdBuilder;
+        private readonly IUrlIdBuilder _urlIdBuilder;
         private readonly string _hostName;
 
         public TinyUrlService(
             string hostName,
             IRepository<TinyUrl> tinyUrlRepository,
             IRepository<UrlStatistics> urlStatsRepository,
-            UrlIdBuilder urlIdBuilder)
+            IUrlIdBuilder urlIdBuilder)
         {
             _hostName = hostName?.TrimEnd('/')
                 ?? throw new ArgumentNullException(nameof(hostName));
@@ -145,12 +146,20 @@ namespace TinyUrlSvc.Services
         // -----------------------------------------------------------
         private string? ExtractCodeFromShortUrl(string shortUrl)
         {
-            if (string.IsNullOrWhiteSpace(shortUrl)) return null;
+            if (string.IsNullOrWhiteSpace(shortUrl))
+                return null;
+
+            // Require at least 2 segments, e.g. "https://short.ly/Abc123" => ["https:", "", "short.ly", "Abc123"]
+            // If the user passes something like "bad-format" => parts.Length == 1 => invalid
             var parts = shortUrl.Split('/');
-            if (parts.Length == 0) return null;
+            if (parts.Length < 2)
+                return null;
 
             var code = parts[^1];
-            return string.IsNullOrWhiteSpace(code) ? null : code;
+            if (string.IsNullOrWhiteSpace(code))
+                return null;
+
+            return code;
         }
     }
 }
