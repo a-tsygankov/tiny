@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TinyUrlSvc", "TinyUrlSvc\Ti
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TinyUrlSvc.Tests", "TinyUrlSvc.Tests\TinyUrlSvc.Tests.csproj", "{7B084AC6-4C99-4F4D-86A4-07C0473B351D}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TinyUrlApi", "TinyUrlAPI\TinyUrlApi.csproj", "{A3A322F8-79E4-4AF2-B54B-6A4DA229334A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{7B084AC6-4C99-4F4D-86A4-07C0473B351D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7B084AC6-4C99-4F4D-86A4-07C0473B351D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7B084AC6-4C99-4F4D-86A4-07C0473B351D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A3A322F8-79E4-4AF2-B54B-6A4DA229334A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A3A322F8-79E4-4AF2-B54B-6A4DA229334A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A3A322F8-79E4-4AF2-B54B-6A4DA229334A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A3A322F8-79E4-4AF2-B54B-6A4DA229334A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
