@@ -32,7 +32,6 @@ namespace TinyUrlSvc.Tests
         {
             // ARRANGE
             var mockRepo = new Mock<IRepository<TinyUrl>>();
-            // The repository returns a non-null TinyUrl => alias "MyAlias" is taken
             var takenUrl = new TinyUrl
             {
                 Id = new UrlId("MyAlias"),

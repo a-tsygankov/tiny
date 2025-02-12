@@ -1,3 +1,4 @@
+// src/App.tsx
 import React, { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import type { RootState, AppDispatch } from './store'
@@ -5,6 +6,7 @@ import {
   fetchAllShortUrls,
   createShortUrl,
   deleteShortUrl,
+  resolveShortUrl,
   UrlStatistics
 } from './urlSlice.ts'
 
@@ -12,46 +14,65 @@ function App() {
   const dispatch = useDispatch<AppDispatch>()
   const { allStats, loading, error } = useSelector((state: RootState) => state.url)
 
+  // Local states for the create form
   const [longUrl, setLongUrl] = useState('')
   const [createdBy, setCreatedBy] = useState('')
   const [customAlias, setCustomAlias] = useState('')
 
   useEffect(() => {
-    // Load all stats on mount
+    // Always fetch the list on mount
     dispatch(fetchAllShortUrls())
   }, [dispatch])
 
-  // Helper to convert date to local string or show "--" if null
+  // Format date/time or show "--"
   const formatDate = (dateString: string | null | undefined) => {
     if (!dateString || dateString === '0001-01-01T00:00:00') {
       return '--'
     }
     const d = new Date(dateString)
-    return d.toLocaleString() // local time format
+    return d.toLocaleString()
   }
 
-  // Handle creation form submit
+  // Create short URL (CreatedBy is optional)
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!longUrl || !createdBy) {
-      alert('Long URL and CreatedBy are required')
+    if (!longUrl) {
+      alert('Long URL is required.')
       return
     }
-    // Dispatch create
-    await dispatch(createShortUrl({ longUrl, createdBy, customAlias }))
-    // Clear form
+    await dispatch(
+      createShortUrl({
+        longUrl,
+        createdBy: createdBy.trim() === '' ? undefined : createdBy.trim(),
+        customAlias
+      })
+    )
+    // Clear fields
     setLongUrl('')
     setCreatedBy('')
     setCustomAlias('')
   }
 
-  // Handle delete button
-  const handleDelete = (stats: UrlStatistics) => {
-    const shortUrlId = stats.id.value // e.g. "gh" or "foobar"
-    // In some backends, the actual short URL is "http://short.ly/foobar"
-    // If you need the full short URL string, you might store it separately
-    // or build it from the Id. For now, we assume the ID alone is sufficient:
-    dispatch(deleteShortUrl(shortUrlId))
+  // Delete a row
+  const handleDelete = (item: UrlStatistics) => {
+    // If your back-end expects the full short URL (e.g. "http://short.ly/alias"), adjust:
+    // dispatch(deleteShortUrl("http://short.ly/" + item.id.value))
+    dispatch(deleteShortUrl(item.id.value))
+  }
+
+  // Resolve short URL to see the long URL
+  const handleResolve = async (item: UrlStatistics) => {
+    // Same idea: pass just the ID or the full short URL, depending on your back end
+    const shortUrlId = item.id.value
+    const resultAction = await dispatch(resolveShortUrl(shortUrlId))
+    // If you store the resolved long URL in the slice, the table will re-render automatically.
+    // Or you can parse the result to show an alert or update local state:
+    if (resolveShortUrl.fulfilled.match(resultAction)) {
+      const longUrl = resultAction.payload as string
+      alert(`Long URL for ${shortUrlId}:\n${longUrl}`)
+    } else {
+      alert('Failed to resolve this short URL.')
+    }
   }
 
   return (
@@ -62,7 +83,7 @@ function App() {
       {error && <p style={{ color: 'red' }}>Error: {error}</p>}
 
       <section style={{ marginBottom: '2rem' }}>
-        <h2>All Short URLs (Stats)</h2>
+        <h2>All Short URLs</h2>
         <table style={{ width: '100%', borderCollapse: 'collapse' }}>
           <thead>
             <tr>
@@ -70,7 +91,7 @@ function App() {
               <th>Click Count</th>
               <th>Last Accessed</th>
               <th>Created At</th>
-              <th></th>
+              <th>Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -81,6 +102,8 @@ function App() {
                 <td>{formatDate(item.lastAccessed)}</td>
                 <td>{formatDate(item.createdAt)}</td>
                 <td>
+                  <button onClick={() => handleResolve(item)}>Resolve</button>
+                  {' '}
                   <button onClick={() => handleDelete(item)}>Delete</button>
                 </td>
               </tr>
@@ -93,7 +116,7 @@ function App() {
         <h2>Create a New Short URL</h2>
         <form onSubmit={handleCreate} style={{ display: 'flex', flexDirection: 'column', maxWidth: '300px' }}>
           <label>
-            Long URL:
+            Long URL (required):
             <input
               type="text"
               value={longUrl}
@@ -102,12 +125,11 @@ function App() {
             />
           </label>
           <label>
-            Created By:
+            Created By (optional):
             <input
               type="text"
               value={createdBy}
               onChange={(e) => setCreatedBy(e.target.value)}
-              required
             />
           </label>
           <label>

@@ -44,13 +44,10 @@ namespace TinyUrlSvc.Services
             if (string.IsNullOrWhiteSpace(createdBy))
                 throw new ArgumentException("CreatedBy cannot be empty.", nameof(createdBy));
 
-            // Delegate generation & uniqueness checks to the builder
             var newId = await _urlIdBuilder.GenerateUrlIdAsync(customAlias);
 
-            // Construct final short URL
             var shortUrl = $"{_hostName}/{newId.Value}";
 
-            // Create and store TinyUrl
             var tinyUrl = new TinyUrl
             {
                 Id = newId,
@@ -61,7 +58,6 @@ namespace TinyUrlSvc.Services
             };
             await _tinyUrlRepository.CreateAsync(tinyUrl);
 
-            // Ensure there's a stats record for this short URL
             var existingStats = await _urlStatsRepository.GetAsync(newId);
             if (existingStats == null)
             {
@@ -74,14 +70,10 @@ namespace TinyUrlSvc.Services
                 await _urlStatsRepository.CreateAsync(newStats);
             }
 
-            // Return the fully qualified short URL
             return shortUrl;
         }
 
-        /// <summary>
-        /// Deletes a short URL (based on its full string). 
-        /// Extracts the last segment to parse out the UrlId.
-        /// </summary>
+
         public async Task<bool> DeleteShortUrlAsync(string shortUrl)
         {
             var code = ExtractCodeFromShortUrl(shortUrl);
@@ -96,10 +88,6 @@ namespace TinyUrlSvc.Services
             return removedTinyUrl;
         }
 
-        /// <summary>
-        /// Retrieves the original long URL from the shortUrl string.
-        /// Increments usage stats if found.
-        /// </summary>
         public async Task<string?> GetLongUrlAsync(string shortUrl)
         {
             var code = ExtractCodeFromShortUrl(shortUrl);
@@ -108,7 +96,6 @@ namespace TinyUrlSvc.Services
             var tinyUrl = await _tinyUrlRepository.GetAsync(new UrlId(code));
             if (tinyUrl == null) return null;
 
-            // Update usage stats
             var stats = await _urlStatsRepository.GetAsync(new UrlId(code));
             if (stats != null)
             {
@@ -120,9 +107,6 @@ namespace TinyUrlSvc.Services
             return tinyUrl.LongUrl;
         }
 
-        /// <summary>
-        /// Retrieves usage stats for a given short URL string.
-        /// </summary>
         public async Task<UrlStatistics?> GetStatisticsAsync(string shortUrl)
         {
             var code = ExtractCodeFromShortUrl(shortUrl);
@@ -131,9 +115,6 @@ namespace TinyUrlSvc.Services
             return await _urlStatsRepository.GetAsync(new UrlId(code));
         }
 
-        /// <summary>
-        /// Lists all stored short URLs.
-        /// </summary>
         public async Task<IEnumerable<UrlStatistics>> GetAllShortenUrlsAsync()
         {
             return await _urlStatsRepository.GetAllAsync();

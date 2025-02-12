@@ -6,7 +6,6 @@ namespace TinyUrlApi.Mock
     {
         public static async Task LoadMockDataAsync(ITinyUrlService service)
         {
-            // Example data: some with custom aliases, some without
             await service.CreateShortUrlAsync("https://microsoft.com", "mockUser", "ms");
             await service.CreateShortUrlAsync("https://github.com", "mockUser", "gh");
             await service.CreateShortUrlAsync("https://example.org/path1", "mockUser", "ex1");

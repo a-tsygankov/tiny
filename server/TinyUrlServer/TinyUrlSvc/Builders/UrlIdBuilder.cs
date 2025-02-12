@@ -22,16 +22,6 @@ namespace TinyUrlSvc.Builders
                 ?? throw new ArgumentNullException(nameof(tinyUrlRepository));
         }
 
-        /// <summary>
-        /// Generates a unique UrlId. If <paramref name="customAlias"/> is provided,
-        /// uses that directly (checking uniqueness). Otherwise, generates random IDs
-        /// until uniqueness is guaranteed.
-        /// </summary>
-        /// <param name="customAlias">Optional custom code for the short URL.</param>
-        /// <returns>A unique UrlId.</returns>
-        /// <exception cref="InvalidOperationException">
-        /// Thrown if the custom alias is already in use.
-        /// </exception>
         public async Task<UrlId> GenerateUrlIdAsync(string? customAlias = null)
         {
             if (!string.IsNullOrWhiteSpace(customAlias))

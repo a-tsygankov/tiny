@@ -6,13 +6,14 @@ export interface UrlId {
   value: string
   isEmpty: boolean
 }
-
 export interface UrlStatistics {
-  id: UrlId
+  id: { value: string }
   clickCount: number
   lastAccessed: string | null
   createdAt: string
+  longUrl?: string 
 }
+
 
 interface TinyUrlState {
   allStats: UrlStatistics[]
@@ -72,6 +73,23 @@ export const deleteShortUrl = createAsyncThunk(
       // After deleting, fetch the updated list
       const res = await axios.get(`${API_BASE}/tinyurls/all`)
       return res.data as UrlStatistics[]
+    } catch (err: any) {
+      return rejectWithValue(err.message)
+    }
+  }
+)
+
+export const resolveShortUrl = createAsyncThunk(
+  'url/resolve',
+  async (shortUrlId: string, { rejectWithValue }) => {
+    try {
+      // If your API expects: GET /tinyurls/resolve?shortUrl=http://short.ly/{id}
+      const fullShortUrl = `http://short.ly/${shortUrlId}`
+      const response = await axios.get(`${API_BASE}/tinyurls/resolve`, {
+        params: { shortUrl: fullShortUrl }
+      })
+      // response.data might be { longUrl: "https://example.com/xxx" }
+      return response.data.longUrl as string
     } catch (err: any) {
       return rejectWithValue(err.message)
     }
